@@ -1,5 +1,6 @@
 [submodule "odin-c-bindgen"]
 	path = odin-c-bindgen
+  ; url = https://github.com/karl-zylinski/odin-c-bindgen.git
 	url = https://github.com/Truc4/odin-c-bindgen.git
 	branch = bitwise-macro
 [submodule "flecs"]

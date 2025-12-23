@@ -3,13 +3,21 @@ inputs = [
 ]
 
 output_folder = "flecs"
-
-package_name = "flecs"
+import_lib = "flecs.lib"
+package_name = "oflecs"
 
 remove_type_prefix = "ecs_"
 remove_macro_prefix = "ECS_"
 remove_function_prefix = "ecs_"
 
+type_overrides = {
+    "ECS_ROW_MASK" = "u64(0x0FFFFFFF)"
+    "ECS_ROW_FLAGS_MASK" = "u64(~ROW_MASK)"
+    "ECS_ID_FLAGS_MASK" = "(u64(0xF) << 60)"
+    "ECS_COMPONENT_MASK" = "u64(~ID_FLAGS_MASK)"
+}
+
 rename = {
     "ecs_import" = "import_"
+    "EcsComponent" = "Component"
 }
