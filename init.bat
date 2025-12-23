@@ -5,6 +5,13 @@ set "ROOT=%~dp0"
 if "%ROOT:~-1%"=="\" set "ROOT=%ROOT:~0,-1%"
 
 set "LLVM_DIR=%ROOT%\llvm"
+@echo off
+setlocal
+
+set "ROOT=%~dp0"
+if "%ROOT:~-1%"=="\" set "ROOT=%ROOT:~0,-1%"
+
+set "LLVM_DIR=%ROOT%\llvm"
 set "LLVM_LIB=%LLVM_DIR%\libclang.lib"
 set "LLVM_DLL=%LLVM_DIR%\libclang.dll"
 
@@ -31,10 +38,6 @@ if errorlevel 1 exit /b %errorlevel%
 call "%ROOT%\build_bindgen.bat"
 if errorlevel 1 exit /b %errorlevel%
 
-call "%ROOT%\generate_flecs_bindings.bat"
-if errorlevel 1 exit /b %errorlevel%
-
 echo.
-echo All steps completed successfully.
+echo Initialization completed successfully.
 exit /b 0
-
