@@ -1,0 +1,5 @@
+flecs-bindgen/flecs.h
+flecs-bindgen/flecs/flecs.lib
+llvm/libclang.dll
+llvm/libclang.lib
+/oflecs

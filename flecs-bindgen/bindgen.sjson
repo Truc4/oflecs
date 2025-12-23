@@ -1,0 +1,17 @@
+inputs = [
+    "flecs.h"
+]
+
+output_folder = "flecs"
+
+package_name = "flecs"
+
+remove_type_prefix = "ecs_"
+remove_macro_prefix = "ECS_"
+remove_function_prefix = "ecs_"
+
+remove_macros = [
+  "ECS_ROW_FLAGS_MASK",
+  "ECS_COMPONENT_MASK"
+]
+
