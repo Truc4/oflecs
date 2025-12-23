@@ -2,6 +2,7 @@
 
 @(default_calling_convention = "c", link_prefix = "Ecs")
 foreign lib {
+  @(link_prefix="ecs_")
   os_api: os_api_t
 
 	/* Builtin component ids */

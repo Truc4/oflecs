@@ -41,7 +41,9 @@ md "%BUILD_DIR%" || exit /b 4
 
 rem --- Configure
 cmake -S "%FLECS_DIR%" -B "%BUILD_DIR%" -G "%GEN%" -A %ARCH% ^
-  -DFLECS_STATIC=ON -DFLECS_SHARED=OFF -DFLECS_PIC=OFF
+  -DFLECS_STATIC=ON -DFLECS_SHARED=OFF -DFLECS_PIC=OFF ^
+  -DCMAKE_POLICY_DEFAULT_CMP0091=NEW ^
+  -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
 if errorlevel 1 (
   rd /s /q "%BUILD_DIR%" 2>nul
   exit /b 5
@@ -87,6 +89,8 @@ if not exist "%HDR_PATH%" (
 )
 
 rem --- Copy outputs
+echo LIB_PATH=%LIB_PATH%
+dir "%LIB_PATH%"
 copy /y "%LIB_PATH%" "%OUT_LIB%" >nul || exit /b 9
 copy /y "%HDR_PATH%" "%OUT_HDR%" >nul || exit /b 10
 
