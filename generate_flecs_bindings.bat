@@ -15,7 +15,7 @@ set "BINDGEN_EXE=%ROOT%\odin-c-bindgen\bindgen.exe"
 set "BINDGEN_DIR=%ROOT%\odin-c-bindgen"
 set "FLECS_BINDGEN_DIR=%ROOT%\flecs-bindgen"
 
-set "OUT_DIR=%ROOT%\oflecs"
+set "OUT_DIR=%ROOT%\distr\oflecs"
 set "OUT_ODIN=%OUT_DIR%\flecs.odin"
 set "OUT_LIB=%OUT_DIR%\flecs.lib"
 

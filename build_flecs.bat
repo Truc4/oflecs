@@ -6,6 +6,7 @@ rem build_flecs.bat
 rem Builds flecs as a STATIC lib and copies:
 rem   - flecs.lib  -> root\flecs-bindgen\flecs\flecs.lib
 rem   - flecs.h    -> root\flecs-bindgen\flecs.h
+rem   - headers    -> root\flecs-bindgen\flecs\*  (for #include <flecs/...>)
 rem ============================================================
 
 rem --- Repo root (folder this script lives in)
@@ -138,13 +139,28 @@ copy /y "%HDR_PATH%" "%OUT_HDR%" >nul || (
   exit /b 10
 )
 
+rem --- Copy header tree so clang can resolve #include <flecs/...>
+rem Copies: flecs\include\flecs\* -> flecs-bindgen\flecs\*
+if not exist "%FLECS_DIR%\include\flecs\." (
+  echo ERROR: Missing include tree at "%FLECS_DIR%\include\flecs\"
+  echo Build dir retained at: %BUILD_DIR%
+  exit /b 11
+)
+
+xcopy "%FLECS_DIR%\include\flecs" "%OUT_LIB_DIR%\" /E /I /Y >nul
+if errorlevel 1 (
+  echo ERROR: Failed to copy flecs include tree to "%OUT_LIB_DIR%".
+  echo Build dir retained at: %BUILD_DIR%
+  exit /b 12
+)
+
 rem --- Cleanup
 rd /s /q "%BUILD_DIR%" 2>nul
 
 echo Success:
 echo   %OUT_LIB%
 echo   %OUT_HDR%
+echo   (and copied headers to %OUT_LIB_DIR%\...)
 
 endlocal
 exit /b 0
-
