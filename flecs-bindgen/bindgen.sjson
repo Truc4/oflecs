@@ -10,8 +10,10 @@ remove_type_prefix = "ecs_"
 remove_macro_prefix = "ECS_"
 remove_function_prefix = "ecs_"
 
-remove_macros = [
+remove = [
   "ECS_ROW_FLAGS_MASK",
-  "ECS_COMPONENT_MASK"
+  "ECS_COMPONENT_MASK",
+  "ECS_ROW_MASK",
+  "ECS_ID_FLAGS_MASK",
 ]
 
