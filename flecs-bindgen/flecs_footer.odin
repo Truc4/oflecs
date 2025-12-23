@@ -1,4 +1,309 @@
-// Footer / Wrapper
+// Bindings that didn't generate (they were defined in flecs.c)
+
+@(default_calling_convention = "c", link_prefix = "Ecs")
+foreign lib {
+  os_api: os_api_t
+
+	/* Builtin component ids */
+
+	/** Tag added to queries. */
+	@(link_prefix = "")
+	EcsQuery: entity_t
+
+	/** Tag added to observers. */
+	Observer: entity_t
+
+	/** Tag added to systems. */
+	@(link_prefix = "")
+	EcsSystem: entity_t
+
+	/** Root scope for builtin flecs entities */
+	Flecs: entity_t
+
+	/** Core module scope */
+	FlecsCore: entity_t
+
+	/** Entity associated with world (used for "attaching" components to world) */
+	World: entity_t
+
+	/** Wildcard entity ("*"). Matches any id, returns all matches. */
+	Wildcard: entity_t
+
+	/** Any entity ("_"). Matches any id, returns only the first. */
+	Any: entity_t
+
+	/** This entity. Default source for queries. */
+	This: entity_t
+
+	/** Variable entity ("$"). Used in expressions to prefix variable names */
+	Variable: entity_t
+
+	/** Marks a relationship as transitive.
+ * Behavior:
+ *
+ * @code
+ *   if R(X, Y) and R(Y, Z) then R(X, Z)
+ * @endcode
+ */
+	Transitive: entity_t
+
+	/** Marks a relationship as reflexive.
+ * Behavior:
+ *
+ * @code
+ *   R(X, X) == true
+ * @endcode
+ */
+	Reflexive: entity_t
+
+	/**:: entity_t entity_tnsures that entity/component cannot be used as target in `IsA` relationship.
+ * Final can improve the performance of queries as they will not attempt to 
+ * substitute a final component with its subsets.
+ *
+ * Behavior:
+ *
+ * @code
+ *   if IsA(X, Y) and Final(Y) throw error
+ * @endcode
+ */
+	Final: entity_t
+
+	/** Mark component as inheritable.
+ * This is the opposite of Final. This trait can be used to enforce that queries
+ * take into account component inheritance before inheritance (IsA) 
+ * relationships are added with the component as target.
+ */
+	Inheritable: entity_t
+
+	/** Relationship that specifies component inheritance behavior. */
+	OnInstantiate: entity_t
+
+	/** Override component on instantiate. 
+ * This will copy the component from the base entity `(IsA target)` to the
+ * instance. The base component will never be inherited from the prefab. */
+	Override: entity_t
+
+	/** Inherit component on instantiate. 
+ * This will inherit (share) the component from the base entity `(IsA target)`.
+ * The component can be manually overridden by adding it to the instance. */
+	Inherit: entity_t
+
+	/** Never inherit component on instantiate. 
+ * This will not copy or share the component from the base entity `(IsA target)`.
+ * When the component is added to an instance, its value will never be copied 
+ * from the base entity. */
+	DontInherit: entity_t
+
+	/** Marks relationship as commutative.
+ * Behavior:
+ *
+ * @code
+ *   if R(X, Y) then R(Y, X)
+ * @endcode
+ */
+	Symmetric: entity_t
+
+	/** Can be added to relationship to indicate that the relationship can only occur
+ * once on an entity. Adding a 2nd instance will replace the 1st.
+ *
+ * Behavior:
+ *
+ * @code
+ *   R(X, Y) + R(X, Z) = R(X, Z)
+ * @endcode
+ */
+	Exclusive: entity_t
+
+	/** Marks a relationship as acyclic. Acyclic relationships may not form cycles. */
+	Acyclic: entity_t
+
+	/** Marks a relationship as traversable. Traversable relationships may be
+ * traversed with "up" queries. Traversable relationships are acyclic. */
+	Traversable: entity_t
+
+	/** Ensure that a component always is added together with another component.
+ *
+ * Behavior:
+ *
+ * @code
+ *   If With(R, O) and R(X) then O(X)
+ *   If With(R, O) and R(X, Y) then O(X, Y)
+ * @endcode
+ */
+	With: entity_t
+
+	/** Ensure that relationship target is child of specified entity.
+ *
+ * Behavior:
+ *
+ * @code
+ *   If OneOf(R, O) and R(X, Y), Y must be a child of O
+ *   If OneOf(R) and R(X, Y), Y must be a child of R
+ * @endcode
+ */
+	OneOf: entity_t
+
+	/** Mark a component as toggleable with ecs_enable_id(). */
+	CanToggle: entity_t
+
+	/** Can be added to components to indicate it is a trait. Traits are components
+ * and/or tags that are added to other components to modify their behavior.
+ */
+	Trait: entity_t
+
+	/** Ensure that an entity is always used in pair as relationship.
+ *
+ * Behavior:
+ *
+ * @code
+ *   e.add(R) panics
+ *   e.add(X, R) panics, unless X has the "Trait" trait
+ * @endcode
+ */
+	Relationship: entity_t
+
+	/** Ensure that an entity is always used in pair as target.
+ *
+ * Behavior:
+ *
+ * @code
+ *   e.add(T) panics
+ *   e.add(T, X) panics
+ * @endcode
+ */
+	Target: entity_t
+
+	/** Can be added to relationship to indicate that it should never hold data, 
+ * even when it or the relationship target is a component. */
+	PairIsTag: entity_t
+
+	/** Tag to indicate name identifier */
+	Name: entity_t
+
+	/** Tag to indicate symbol identifier */
+	Symbol: entity_t
+
+	/** Tag to indicate alias identifier */
+	Alias: entity_t
+
+	/** Used to express parent-child relationships. */
+	ChildOf: entity_t
+
+	/** Used to express inheritance relationships. */
+	IsA: entity_t
+
+	/** Used to express dependency relationships */
+	DependsOn: entity_t
+
+	/** Used to express a slot (used with prefab inheritance) */
+	SlotOf: entity_t
+
+	/** Tag that when added to a parent ensures stable order of ecs_children result. */
+	OrderedChildren: entity_t
+
+	/** Tag added to module entities */
+	Module: entity_t
+
+	/** Tag to indicate an entity/component/system is private to a module */
+	Private: entity_t
+
+	/** Tag added to prefab entities. Any entity with this tag is automatically
+ * ignored by queries, unless #EcsPrefab is explicitly queried for. */
+	Prefab: entity_t
+
+	/** When this tag is added to an entity it is skipped by queries, unless
+ * #EcsDisabled is explicitly queried for. */
+	Disabled: entity_t
+
+	/** Trait added to entities that should never be returned by queries. Reserved
+ * for internal entities that have special meaning to the query engine, such as
+ * #EcsThis, #EcsWildcard, #EcsAny. */
+	NotQueryable: entity_t
+
+	/** Event that triggers when an id is added to an entity */
+	OnAdd: entity_t
+
+	/** Event that triggers when an id is removed from an entity */
+	OnRemove: entity_t
+
+	/** Event that triggers when a component is set for an entity */
+	OnSet: entity_t
+
+	/** Event that triggers observer when an entity starts/stops matching a query */
+	Monitor: entity_t
+
+	/** Event that triggers when a table is created. */
+	OnTableCreate: entity_t
+
+	/** Event that triggers when a table is deleted. */
+	OnTableDelete: entity_t
+
+	/** Relationship used for specifying cleanup behavior. */
+	OnDelete: entity_t
+
+	/** Relationship used to define what should happen when a target entity (second
+ * element of a pair) is deleted. */
+	OnDeleteTarget: entity_t
+
+	/** Remove cleanup policy. Must be used as target in pair with #EcsOnDelete or
+ * #EcsOnDeleteTarget. */
+	Remove: entity_t
+
+	/** Delete cleanup policy. Must be used as target in pair with #EcsOnDelete or
+ * #EcsOnDeleteTarget. */
+	Delete: entity_t
+
+	/** Panic cleanup policy. Must be used as target in pair with #EcsOnDelete or
+ * #EcsOnDeleteTarget. */
+	Panic: entity_t
+
+	/** Mark component as sparse */
+	Sparse: entity_t
+
+	/** Mark component as non-fragmenting */
+	DontFragment: entity_t
+
+	/** Marker used to indicate `$var == ...` matching in queries. */
+	PredEq: entity_t
+
+	/** Marker used to indicate `$var == "name"` matching in queries. */
+	PredMatch: entity_t
+
+	/** Marker used to indicate `$var ~= "pattern"` matching in queries. */
+	PredLookup: entity_t
+
+	/** Marker used to indicate the start of a scope (`{`) in queries. */
+	ScopeOpen: entity_t
+
+	/** Marker used to indicate the end of a scope (`}`) in queries. */
+	ScopeClose: entity_t
+
+	/** Tag used to indicate query is empty.
+ * This tag is removed automatically when a query becomes non-empty, and is not
+ * automatically re-added when it becomes empty.
+ */
+	Empty: entity_t
+
+	OnStart: entity_t /**< OnStart pipeline phase. */
+	PreFrame: entity_t /**< PreFrame pipeline phase. */
+	OnLoad: entity_t /**< OnLoad pipeline phase. */
+	PostLoad: entity_t /**< PostLoad pipeline phase. */
+	PreUpdate: entity_t /**< PreUpdate pipeline phase. */
+	OnUpdate: entity_t /**< OnUpdate pipeline phase. */
+	OnValidate: entity_t /**< OnValidate pipeline phase. */
+	PostUpdate: entity_t /**< PostUpdate pipeline phase. */
+	PreStore: entity_t /**< PreStore pipeline phase. */
+	OnStore: entity_t /**< OnStore pipeline phase. */
+	PostFrame: entity_t /**< PostFrame pipeline phase. */
+	Phase: entity_t /**< Phase pipeline phase. */
+
+	Constant: entity_t /**< Tag added to enum/bitmask constants. */
+}
+
+// Wrapper
+
+import "core:fmt"
+import "core:mem"
 
 // TODO: add overloads, generics, etc here to replace missing macros
 
