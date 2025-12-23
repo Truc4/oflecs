@@ -1,7 +1,7 @@
 package main
 
 import "core:fmt"
-import ecs "flecs"
+import ecs "../distr/oflecs"
 
 Position :: struct {
 	x, y: f32,

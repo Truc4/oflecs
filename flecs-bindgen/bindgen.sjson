@@ -1,0 +1,46 @@
+inputs = [
+    "flecs.h"
+]
+
+output_folder = "flecs"
+import_lib = "flecs.lib"
+package_name = "oflecs"
+
+remove_type_prefix = "ecs_"
+remove_macro_prefix = "ECS_"
+remove_function_prefix = "ecs_"
+
+type_overrides = {
+    "ECS_ROW_MASK" = "u64(0x0FFFFFFF)"
+    "ECS_ROW_FLAGS_MASK" = "u64(~ROW_MASK)"
+    "ECS_ID_FLAGS_MASK" = "(u64(0xF) << 60)"
+    "ECS_COMPONENT_MASK" = "u64(~ID_FLAGS_MASK)"
+    "ECS_STRBUF_INIT" = "(strbuf_t){}"
+    "ECS_MAX_COMPONENT_ID" = "(~((u32)(ID_FLAGS_MASK>>32)))"
+    "ECS_HTTP_REPLY_INIT" = "(http_reply_t){200, STRBUF_INIT, \"OK\", \"application/json\", STRBUF_INIT}"
+    "ECS_TABLE_MEMORY_HISTOGRAM_MAX_COUNT" = "(1 << TABLE_MEMORY_HISTOGRAM_BUCKET_COUNT)"
+    "ecs_type_t" = "struct {\n  array: [^]id_t,\n  count: i32,\n}"
+    "EcsTraverseFlags" = "(EcsSelf|Up|EcsTrav|Cascade|EcsDesc)"
+    "ecs_iter_t" = "struct {\n\tworld:             ^world_t,\n\t/**< The world. Can point to stage when in deferred/readonly mode. */\n\treal_world:        ^world_t,\n\t/**< Actual world. Never points to a stage. */\n\toffset:            i32,\n\t/**< Offset relative to current table */\n\tcount:             i32,\n\t/**< Number of entities to iterate */\n\tentities:          [^]entity_t,\n\t/**< Entity identifiers */\n\tptrs:              ^rawptr,\n\t/**< Component pointers. If not set or if it's NULL for a field, use it.trs. */\n\ttrs:               ^^table_record_t,\n\t/**< Info on where to find field in table */\n\tsizes:             ^size_t,\n\t/**< Component sizes */\n\ttable:             ^table_t,\n\t/**< Current table */\n\tother_table:       ^table_t,\n\t/**< Prev or next table when adding/removing */\n\tids:               [^]id_t,\n\t/**< (Component) ids */\n\tsources:           ^entity_t,\n\t/**< Entity on which the id was matched (0 if same as entities) */\n\tconstrained_vars:  flags64_t,\n\t/**< Bitset that marks constrained variables */\n\tset_fields:        flags32_t,\n\t/**< Fields that are set */\n\tref_fields:        flags32_t,\n\t/**< Bitset with fields that aren't component arrays */\n\trow_fields:        flags32_t,\n\t/**< Fields that must be obtained with field_at */\n\tup_fields:         flags32_t,\n\t/**< Bitset with fields matched through up traversal */\n\tsystem:            entity_t,\n\t/**< The system (if applicable) */\n\tevent:             entity_t,\n\t/**< The event (if applicable) */\n\tevent_id:          id_t,\n\t/**< The (component) id for the event */\n\tevent_cur:         i32,\n\t/**< Unique event id. Used to dedup observer calls */\n\tfield_count:       i8,\n\t/**< Number of fields in iterator */\n\tterm_index:        i8,\n\t/**< Index of term that emitted an event.\n                                   * This field will be set to the 'index' field\n                                   * of an observer term. */\n\tquery:             ^query_t,\n\t/**< Query being evaluated */\n\tparam:             rawptr,\n\t/**< Param passed to ecs_run */\n\tctx:               rawptr,\n\t/**< System context */\n\tbinding_ctx:       rawptr,\n\t/**< System binding context */\n\tcallback_ctx:      rawptr,\n\t/**< Callback language binding context */\n\trun_ctx:           rawptr,\n\t/**< Run language binding context */\n\tdelta_time:        f32,\n\t/**< Time elapsed since last frame */\n\tdelta_system_time: f32,\n\t/**< Time elapsed since last system invocation */\n\tframe_offset:      i32,\n\t/**< Offset relative to start of iteration */\n\tflags:             flags32_t,\n\t/**< Iterator flags */\n\tinterrupted_by:    entity_t,\n\t/**< When set, system execution is interrupted */\n\tpriv_:             iter_private_t,\n\t/**< Private data */\n\tnext:              iter_next_action_t,\n\t/**< Function to progress iterator */\n\tcallback:          iter_action_t,\n\t/**< Callback of system or observer */\n\tfini:              iter_fini_action_t,\n\t/**< Function to cleanup iterator resources */\n\tchain_it:          ^iter_t,\n\t/**< Optional, allows for creating iterator chains */\n}"
+}
+
+rename = {
+    "ecs_import" = "import_"
+    "EcsComponent" = "Component"
+    "EcsIdentifier" = "Identifier"
+    "EcsPoly" = "Poly"
+    "EcsTickSource" = "TickSource"
+    "EcsTimer" = "Timer"
+    "EcsRateFilter" = "RateFilter"
+    "EcsDefaultChildComponent" = "DefaultChildComponent"
+    "EcsCascade" = "Cascade"
+    "EcsUp" = "Up"
+    "ecs_init" = "@(link_prefix = \"\")\n  ecs_init"
+    "ecs_delete" = "@(link_prefix = \"\")\n  ecs_delete"
+    "ecs_get_type" = "@(link_prefix = \"\")\n  ecs_get_type"
+    "ecs_type_str" = "@(link_prefix = \"\")\n  ecs_type_str"
+    "ecs_get_name" = "@(link_prefix = \"\")\n  ecs_get_name"
+    "ecs_set_name" = "@(link_prefix = \"\")\n  ecs_set_name"
+    "ecs_lookup" = "@(link_prefix = \"\")\n  ecs_lookup"
+    "ecs_run" = "@(link_prefix = \"\")\n  ecs_run"
+}
