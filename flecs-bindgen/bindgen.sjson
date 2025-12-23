@@ -10,3 +10,6 @@ remove_type_prefix = "ecs_"
 remove_macro_prefix = "ECS_"
 remove_function_prefix = "ecs_"
 
+rename = {
+    "ecs_import" = "import_"
+}
