@@ -1,5 +1,3 @@
-package oflecs
-
 // TODO: add overloads, generics, etc here to replace missing macros
 
 Entity :: struct {
