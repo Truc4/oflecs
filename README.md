@@ -25,7 +25,7 @@ The wrapper aims to:
 
 - Reduce boilerplate
 - Replace common C macros with Odin procedures
-- Provide a more ergonomic, idiomatic Odin-style API
+- Provide a more Odin-style API
 - Keep everything explicit and data-oriented (no classes, no hidden state)
 
 This wrapper is opinionated and reflects how I like to use Flecs.
@@ -99,7 +99,6 @@ Notes:
 
 - Components are registered lazily on first use
 - `ecs.set` automatically adds the component if missing
-- No macros are required
 - The API stays explicit and procedural
 
 ## Example Usage
@@ -165,7 +164,6 @@ If you need fully validated bindings, you should audit and extend these yourself
 
 - Windows
 - Odin (must be available in `PATH`)
-- CMake
 - Visual Studio 2022 (MSVC toolchain)
 
 ### Required external dependency
