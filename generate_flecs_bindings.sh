@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+GCC_INC="$(gcc -print-file-name=include)"
+export C_INCLUDE_PATH="${GCC_INC}:/usr/include:${C_INCLUDE_PATH:-}"
+
 # ============================================================
 # generate_flecs_bindings.sh
 # 1) Run: odin-c-bindgen/bindgen flecs-bindgen
