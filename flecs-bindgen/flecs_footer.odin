@@ -804,6 +804,8 @@ system_with_query :: proc(query: Query, callback: iter_action_t) -> Entity {
 	return Entity{query.world, system_init(query.world, &desc)}
 }
 
+// WARN: dangling pointer!
+// TODO: just use the system description
 system_with_phase :: proc(query: Query, callback: iter_action_t, phase: entity_t) -> Entity {
 	system := System{query.world, callback, phase, query.desc}
 	register_system(&system)
