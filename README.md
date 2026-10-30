@@ -11,6 +11,22 @@ This is a personal project, I have not extensively testing the entire Flecs API.
 
 This repository exists primarily for my own use, but is published publicly in case it’s useful to others.
 
+## Linux, macOS and WASM (branch `rpg-prototype`)
+
+```
+git submodule update --init
+apt install libclang-dev        # or your platform's libclang, version 16+
+./build_flecs.sh                # libs for this OS (+ wasm/flecs.a if emcc is on PATH), then the bindings
+```
+
+Output goes to `distr/oflecs/` as on Windows. Import it with `-collection:oflecs=<oflecs>/distr` and
+`import ecs "oflecs:oflecs"`. For web builds compiled with `-build-mode:obj`, link `distr/oflecs/wasm/flecs.a`
+with emcc. The bindings import it under the module name `env` so emcc resolves it (override with
+`-define:FLECS_WASM_LIB=...`).
+
+Wrapper additions for game code: `query_new(world, {A, B}, without = {C})`, `field_slice(&it, T, i)`,
+`get_mut`, `ensure`, `modified`, `alive`, `query_entities`, `query_first`.
+
 ## Overview
 
 This project consists of two layers:
