@@ -7,8 +7,10 @@ when ODIN_OS == .Windows {
 } else when ODIN_OS == .Darwin {
 	foreign import lib "macos/flecs.a"
 } else when ODIN_ARCH == .wasm32 || ODIN_ARCH == .wasm64p32 {
-	// For -build-mode:obj web builds the library is linked by emcc (see build_flecs.sh); this import
-	// only names it.
-	foreign import lib "wasm/flecs.a"
+	// Web builds are `-build-mode:obj` objects linked by emcc with wasm/flecs.a (see build_flecs.sh).
+	// Odin turns a WASM import path into the import's module name, so it must be "env" (Emscripten's
+	// own module) for emcc to resolve the symbols against the library. Same trick as vendor:raylib.
+	FLECS_WASM_LIB :: #config(FLECS_WASM_LIB, "env.o")
+	foreign import lib {FLECS_WASM_LIB}
 }
 _ :: lib

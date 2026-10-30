@@ -1,4 +1,93 @@
 // Bindings that didn't generate (they were defined in flecs.c)
+//
+// On WASM, Odin only allows foreign variables in a `foreign {` block with no library (emcc resolves
+// them at link time), so the same declarations are listed twice. Keep the two lists in step.
+
+when ODIN_ARCH == .wasm32 || ODIN_ARCH == .wasm64p32 {
+
+@(default_calling_convention = "c", link_prefix = "Ecs")
+foreign {
+	@(link_prefix="ecs_")
+	os_api: os_api_t
+	@(link_prefix = "")
+	EcsQuery: entity_t
+	Observer: entity_t
+	@(link_prefix = "")
+	EcsSystem: entity_t
+	Flecs: entity_t
+	FlecsCore: entity_t
+	World: entity_t
+	Wildcard: entity_t
+	Any: entity_t
+	This: entity_t
+	Variable: entity_t
+	Transitive: entity_t
+	Reflexive: entity_t
+	Final: entity_t
+	Inheritable: entity_t
+	OnInstantiate: entity_t
+	Override: entity_t
+	Inherit: entity_t
+	DontInherit: entity_t
+	Symmetric: entity_t
+	Exclusive: entity_t
+	Acyclic: entity_t
+	Traversable: entity_t
+	With: entity_t
+	OneOf: entity_t
+	CanToggle: entity_t
+	Trait: entity_t
+	Relationship: entity_t
+	Target: entity_t
+	PairIsTag: entity_t
+	Name: entity_t
+	Symbol: entity_t
+	Alias: entity_t
+	ChildOf: entity_t
+	IsA: entity_t
+	DependsOn: entity_t
+	SlotOf: entity_t
+	OrderedChildren: entity_t
+	Module: entity_t
+	Private: entity_t
+	Prefab: entity_t
+	Disabled: entity_t
+	NotQueryable: entity_t
+	OnAdd: entity_t
+	OnRemove: entity_t
+	OnSet: entity_t
+	Monitor: entity_t
+	OnTableCreate: entity_t
+	OnTableDelete: entity_t
+	OnDelete: entity_t
+	OnDeleteTarget: entity_t
+	Remove: entity_t
+	Delete: entity_t
+	Panic: entity_t
+	Sparse: entity_t
+	DontFragment: entity_t
+	PredEq: entity_t
+	PredMatch: entity_t
+	PredLookup: entity_t
+	ScopeOpen: entity_t
+	ScopeClose: entity_t
+	Empty: entity_t
+	OnStart: entity_t
+	PreFrame: entity_t
+	OnLoad: entity_t
+	PostLoad: entity_t
+	PreUpdate: entity_t
+	OnUpdate: entity_t
+	OnValidate: entity_t
+	PostUpdate: entity_t
+	PreStore: entity_t
+	OnStore: entity_t
+	PostFrame: entity_t
+	Phase: entity_t
+	Constant: entity_t
+}
+
+} else {
 
 @(default_calling_convention = "c", link_prefix = "Ecs")
 foreign lib {
@@ -299,6 +388,8 @@ foreign lib {
 	Phase: entity_t /**< Phase pipeline phase. */
 
 	Constant: entity_t /**< Tag added to enum/bitmask constants. */
+}
+
 }
 
 // Wrapper
