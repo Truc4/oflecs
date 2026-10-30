@@ -46,7 +46,7 @@ build_libs() {
 }
 
 build_bindings() {
-	gen="$ROOT/odin-c-bindgen/bindgen.bin"
+	gen="$ROOT/bindgen.bin" # outside the submodule, which stays clean
 	if [ ! -x "$gen" ]; then
 		# The submodule pins upstream odin-c-bindgen, which predates Odin's core:os rework. The port to
 		# current Odin lives in patches/ and is applied to a scratch copy, so the submodule stays clean.
@@ -61,7 +61,7 @@ build_bindings() {
 		rm -rf "$work"
 	fi
 	cp "$HDR" "$ROOT/flecs-bindgen/flecs.h"
-	(cd "$ROOT/odin-c-bindgen" && ./bindgen.bin "$ROOT/flecs-bindgen")
+	(cd "$ROOT/odin-c-bindgen" && "$gen" "$ROOT/flecs-bindgen")
 	mv "$ROOT/flecs-bindgen/flecs/flecs.odin" "$OUT/flecs.odin"
 	echo "generated $OUT/flecs.odin"
 }
