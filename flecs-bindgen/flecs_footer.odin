@@ -993,3 +993,99 @@ module :: proc "contextless" (world: ^world_t, $T: typeid, name: cstring) {
 import_module :: proc(world: ^world_t, import_proc: module_action_t, $T: typeid) {
 	import_c(world, import_proc, fmt.ctprint(typeid_of(T)))
 }
+
+/* ------------------------------------------------------------------------------------------------
+   Additions for game code (rpg-prototype branch)
+   ------------------------------------------------------------------------------------------------ */
+
+// Is this a live entity? (A zero handle never is.)
+alive :: proc(entity: Entity) -> bool {
+	return entity.handle != 0 && is_alive(entity.world, entity.handle)
+}
+
+// A pointer you may write through, or nil if the entity lacks T. Writes are not announced to
+// observers; call `modified` if something listens for OnSet.
+get_mut :: proc(entity: Entity, $T: typeid) -> ^T {
+	return (^T)(get_mut_id(entity.world, entity.handle, get_component_handle(entity.world, T)))
+}
+
+// A pointer you may write through. Adds T (zeroed) first if the entity lacks it.
+ensure :: proc(entity: Entity, $T: typeid) -> ^T {
+	return (^T)(ensure_id(entity.world, entity.handle, get_component_handle(entity.world, T), size_of(T)))
+}
+
+modified :: proc(entity: Entity, $T: typeid) {
+	modified_id(entity.world, entity.handle, get_component_handle(entity.world, T))
+}
+
+// Component id for a typeid known only at run time (registered on first use, like the generic path).
+component_id :: proc(world: ^world_t, T: typeid) -> entity_t {
+	component_entities := &world_components[world]
+	if e, ok := component_entities[T]; ok {return e}
+	ti := type_info_of(T)
+	name := fmt.ctprint(T)
+	edesc := entity_desc_t{use_low_id = true, name = name, symbol = name}
+	desc: component_desc_t
+	desc.entity = entity_init(world, &edesc)
+	desc.type.size = size_t(ti.size)
+	desc.type.alignment = size_t(ti.align)
+	e := component_init(world, &desc)
+	component_entities[T] = e
+	return e
+}
+
+// Build a query in one call. Terms are fields in the order given, so `field_slice(&it, T, i)` uses the
+// index of T in `with`.
+//
+//     movers := ecs.query_new(world, {Transform, Mover}, without = {Frozen})
+//     it := ecs.query_iter(world, movers.handle)
+//     for ecs.query_next(&it) {
+//         ts := ecs.field_slice(&it, Transform, 0)
+//         ms := ecs.field_slice(&it, Mover, 1)
+//         for i in 0 ..< it.count { ... }
+//     }
+query_new :: proc(world: ^world_t, with: []typeid, without: []typeid = nil) -> Query {
+	q := Query{world = world}
+	for T in with {
+		q.desc.terms[q.term_count].id = component_id(world, T)
+		q.term_count += 1
+	}
+	for T in without {
+		q.desc.terms[q.term_count].id = component_id(world, T)
+		q.desc.terms[q.term_count].oper = i16(oper_kind_t.Not)
+		q.term_count += 1
+	}
+	q.handle = query_init(world, &q.desc)
+	assert(q.handle != nil, "query_new: flecs rejected the query")
+	return q
+}
+
+// The component column for field `index` of the current table, as a slice of it.count items.
+field_slice :: proc "contextless" (it: ^iter_t, $T: typeid, index: i8) -> []T {
+	p := field_w_size(it, size_of(T), index)
+	if p == nil {return nil}
+	return ([^]T)(p)[:it.count]
+}
+
+// Every entity the query matches, collected (so the caller may add/remove components while walking it).
+query_entities :: proc(q: Query, allocator := context.temp_allocator) -> []Entity {
+	out := make([dynamic]Entity, allocator)
+	it := query_iter(q.world, q.handle)
+	for query_next(&it) {
+		for i in 0 ..< int(it.count) {append(&out, Entity{q.world, it.entities[i]})}
+	}
+	return out[:]
+}
+
+// The first entity the query matches (singletons such as the player), or a zero Entity.
+query_first :: proc(q: Query) -> Entity {
+	it := query_iter(q.world, q.handle)
+	for query_next(&it) {
+		if it.count > 0 {
+			e := Entity{q.world, it.entities[0]}
+			iter_fini(&it)
+			return e
+		}
+	}
+	return {}
+}
