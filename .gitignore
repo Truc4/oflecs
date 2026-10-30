@@ -4,3 +4,4 @@ llvm/libclang.lib
 /distr
 /flecs-bindgen/flecs
 /odin-c-bindgen/bindgen.bin
+/bindgen.bin

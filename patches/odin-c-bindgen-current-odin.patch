@@ -1,0 +1,207 @@
+From 02aa542bfdc6e4820cd787e964623c53ef6e93de Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Fri, 30 Oct 2026 10:11:34 -0600
+Subject: [PATCH 1/2] Build with current Odin: port from core:os/os2 to core:os
+
+Odin folded os2 into core:os. read_entire_file now takes an allocator and
+returns an Error, write_entire_file returns an Error, and filepath.join
+also returns an allocator error (wrapped in path_join). Generated output
+for flecs.h is byte-identical to the previous build.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01PY3dmCuwSCz6Sno9XrJcyN
+---
+ src/main.odin              | 46 +++++++++++++++++++++-----------------
+ src/output.odin            |  2 +-
+ src/translate_process.odin |  2 +-
+ 3 files changed, 28 insertions(+), 22 deletions(-)
+
+diff --git a/src/main.odin b/src/main.odin
+index e8a6b62..2cf6e0e 100644
+--- a/src/main.odin
++++ b/src/main.odin
+@@ -3,7 +3,6 @@ package bindgen2
+ import vmem "core:mem/virtual"
+ import "core:mem"
+ import "core:os"
+-import "core:os/os2"
+ import "core:fmt"
+ import "core:strings"
+ import "core:path/filepath"
+@@ -31,7 +30,7 @@ main :: proc() {
+ 		config_filename = config_dir_or_file
+ 		dir = filepath.dir(config_dir_or_file)
+ 	} else if os.is_dir(config_dir_or_file) {
+-		config_filename = filepath.join({config_dir_or_file, DEFAULT_CONFIG_FILENAME})
++		config_filename = path_join({config_dir_or_file, DEFAULT_CONFIG_FILENAME})
+ 		dir = config_dir_or_file
+ 	} else {
+ 		fmt.panicf("%v is not a directory nor a valid config file", config_dir_or_file)
+@@ -40,8 +39,8 @@ main :: proc() {
+ 	default_output_folder := "output"
+ 	default_package_name := "pkg"
+ 
+-	if config_dir_handle, config_dir_handle_err := os2.open(dir); config_dir_handle_err == nil {
+-		if stat, stat_err := os2.fstat(config_dir_handle, context.allocator); stat_err == nil {
++	if config_dir_handle, config_dir_handle_err := os.open(dir); config_dir_handle_err == nil {
++		if stat, stat_err := os.fstat(config_dir_handle, context.allocator); stat_err == nil {
+ 			default_output_folder = stat.name
+ 			default_package_name = stat.name
+ 		}
+@@ -50,7 +49,7 @@ main :: proc() {
+ 	config: Config
+ 
+ 	if os.is_file(config_filename) {
+-		if config_data, config_data_ok := os.read_entire_file(config_filename); config_data_ok {
++		if config_data, config_data_err := os.read_entire_file(config_filename, context.allocator); config_data_err == nil {
+ 			config_err := json.unmarshal(config_data, &config, .SJSON)
+ 			fmt.ensuref(
+ 				config_err == nil,
+@@ -59,37 +58,37 @@ main :: proc() {
+ 				config_err,
+ 			)
+ 		} else {
+-			fmt.ensuref(config_data_ok, "Failed parsing config %v", config_filename)
++			fmt.panicf("Failed reading config %v: %v", config_filename, config_data_err)
+ 		}
+ 	} else {
+ 		config.inputs = slice.clone([]string{"."})
+ 	}
+ 
+-	output_folder := filepath.join({dir, config.output_folder != "" ? config.output_folder : default_output_folder})
++	output_folder := path_join({dir, config.output_folder != "" ? config.output_folder : default_output_folder})
+ 	package_name := config.package_name != "" ? config.package_name : default_package_name
+ 	
+ 	if config.imports_file != "" {
+-		config.imports_file = filepath.join({dir, config.imports_file})
++		config.imports_file = path_join({dir, config.imports_file})
+ 	}
+ 
+ 	input_files: [dynamic]string
+ 
+ 	for input_base in config.inputs {
+-		input := filepath.join({dir, input_base})
++		input := path_join({dir, input_base})
+ 		if os.is_dir(input) {
+-			input_folder, input_folder_err := os2.open(input)
++			input_folder, input_folder_err := os.open(input)
+ 			log.ensuref(input_folder_err == nil, "Failed opening folder %v: %v", input, input_folder_err)
+-			iter := os2.read_directory_iterator_create(input_folder)
++			iter := os.read_directory_iterator_create(input_folder)
+ 
+-			for f in os2.read_directory_iterator(&iter) {
++			for f in os.read_directory_iterator(&iter) {
+ 				if f.type != .Regular {
+ 					continue
+ 				}
+ 
+-				append(&input_files, filepath.join({input, f.name}))
++				append(&input_files, path_join({input, f.name}))
+ 			}
+ 
+-			os2.close(input_folder)
++			os.close(input_folder)
+ 		} else if os.is_file(input) {
+ 			append(&input_files, input)
+ 		} else {
+@@ -97,8 +96,8 @@ main :: proc() {
+ 		}
+ 	}
+ 
+-	if output_folder != "" && !os2.exists(output_folder) {
+-		make_dir_err := os2.make_directory_all(output_folder)
++	if output_folder != "" && !os.exists(output_folder) {
++		make_dir_err := os.make_directory_all(output_folder)
+ 		log.ensuref(make_dir_err == nil, "Failed creating output directory %v: %v", output_folder, make_dir_err)
+ 	}
+ 
+@@ -139,16 +138,16 @@ main :: proc() {
+ 	
+ 			input_folder := filepath.dir(input_filename)
+ 			filename_stem := filepath.stem(input_filename)
+-			footer_filename := filepath.join({input_folder, fmt.tprintf("%v_footer.odin", filename_stem)})
++			footer_filename := path_join({input_folder, fmt.tprintf("%v_footer.odin", filename_stem)})
+ 
+ 			footer: string
+ 			if os.exists(footer_filename) {
+-				if footer_bytes, footer_bytes_ok := os.read_entire_file(footer_filename); footer_bytes_ok {
++				if footer_bytes, footer_bytes_err := os.read_entire_file(footer_filename, context.allocator); footer_bytes_err == nil {
+ 					footer = string(footer_bytes)
+ 				}
+ 			}
+ 
+-			output_filename := filepath.join({output_folder, fmt.tprintf("%v.odin", filename_stem)})
++			output_filename := path_join({output_folder, fmt.tprintf("%v.odin", filename_stem)})
+ 			log.infof("Writing %v", output_filename)
+ 			output(types, decls, process_res, output_filename, footer, package_name)
+ 			vmem.arena_destroy(&gen_arena)
+@@ -162,4 +161,11 @@ gen_ctx: runtime.Context
+ 
+ to_cstring :: proc(str: string) -> cstring {
+ 	return strings.clone_to_cstring(str)
+-}
+\ No newline at end of file
++}
++// filepath.join returns an allocator error too since the core:os rework; with the arena allocators used
++// here a failure means the arena is exhausted, which is fatal anyway.
++path_join :: proc(elems: []string) -> string {
++	joined, err := filepath.join(elems)
++	log.ensuref(err == nil, "Failed joining path %v: %v", elems, err)
++	return joined
++}
+diff --git a/src/output.odin b/src/output.odin
+index c0cd873..ccce0cf 100644
+--- a/src/output.odin
++++ b/src/output.odin
+@@ -205,7 +205,7 @@ output :: proc(types: Type_List, decls: Decl_List, o: Output_Input, filename: st
+ 	p(sb, footer)
+ 
+ 	write_err := os.write_entire_file(filename, transmute([]u8)(strings.to_string(builder)))
+-	fmt.ensuref(write_err == true, "Failed writing %v", filename)
++	fmt.ensuref(write_err == nil, "Failed writing %v: %v", filename, write_err)
+ }
+ 
+ output_indent :: proc(b: ^strings.Builder, indent: int) {
+diff --git a/src/translate_process.odin b/src/translate_process.odin
+index 75f613a..8955eb8 100644
+--- a/src/translate_process.odin
++++ b/src/translate_process.odin
+@@ -326,7 +326,7 @@ translate_process :: proc(tcr: Translate_Collect_Result, config: Config, types:
+ 	top_code: string
+ 
+ 	if config.imports_file != "" {
+-		if imports, imports_ok := os.read_entire_file(config.imports_file); imports_ok {
++		if imports, imports_err := os.read_entire_file(config.imports_file, context.allocator); imports_err == nil {
+ 			top_code = string(imports)
+ 		}
+ 	} else if config.import_lib != "" {
+-- 
+2.43.0
+
+
+From 4cd2119a7d6b58872d32416c41b558b0a53bb02c Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Fri, 30 Oct 2026 10:11:39 -0600
+Subject: [PATCH 2/2] Ignore the Linux/macOS generator binary
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01PY3dmCuwSCz6Sno9XrJcyN
+---
+ .gitignore | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/.gitignore b/.gitignore
+index 501b0dd..7715bfb 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -8,4 +8,5 @@ libclang.dll
+ libclang/libclang.lib
+ **/_output
+ src/examples/tester/tester/*
+-*.sublime-workspace
+\ No newline at end of file
++*.sublime-workspace
++bindgen.bin
+-- 
+2.43.0
+

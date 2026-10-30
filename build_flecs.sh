@@ -48,9 +48,17 @@ build_libs() {
 build_bindings() {
 	gen="$ROOT/odin-c-bindgen/bindgen.bin"
 	if [ ! -x "$gen" ]; then
+		# The submodule pins upstream odin-c-bindgen, which predates Odin's core:os rework. The port to
+		# current Odin lives in patches/ and is applied to a scratch copy, so the submodule stays clean.
+		work="$(mktemp -d)"
+		cp -r "$ROOT/odin-c-bindgen/." "$work/"
+		rm -rf "$work/.git"
+		for p in "$ROOT"/patches/odin-c-bindgen-*.patch; do
+			[ -f "$p" ] && (cd "$work" && patch -p1 --forward --silent < "$p")
+		done
 		llvm_lib="$(llvm-config --libdir 2>/dev/null || echo /usr/lib/llvm-18/lib)"
-		(cd "$ROOT/odin-c-bindgen" && odin build src -out:bindgen.bin \
-			-extra-linker-flags:"-L$llvm_lib -Wl,-rpath,$llvm_lib")
+		(cd "$work" && odin build src -out:"$gen" -extra-linker-flags:"-L$llvm_lib -Wl,-rpath,$llvm_lib")
+		rm -rf "$work"
 	fi
 	cp "$HDR" "$ROOT/flecs-bindgen/flecs.h"
 	(cd "$ROOT/odin-c-bindgen" && ./bindgen.bin "$ROOT/flecs-bindgen")
