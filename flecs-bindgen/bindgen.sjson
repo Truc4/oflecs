@@ -3,7 +3,7 @@ inputs = [
 ]
 
 output_folder = "flecs"
-import_lib = "flecs.lib"
+imports_file = "imports.odin"
 package_name = "oflecs"
 
 remove_type_prefix = "ecs_"

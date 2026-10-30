@@ -411,10 +411,11 @@ set_name :: proc(entity: Entity, name: string) {
 ComponentEntityMap :: map[typeid]entity_t
 @(private)
 SystemEntityMap :: map[^System]entity_t
+// Nil maps allocate on first insert. (Newer Odin rejects `make` at global scope.)
 @(private)
-world_components := make(map[^world_t]ComponentEntityMap)
+world_components: map[^world_t]ComponentEntityMap
 @(private)
-world_systems := make(map[^world_t]SystemEntityMap)
+world_systems: map[^world_t]SystemEntityMap
 
 // Add a (component) id to an entity.
 //
