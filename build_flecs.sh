@@ -9,10 +9,6 @@
 #
 # Requirements: clang, libclang (apt install libclang-dev), Odin, and emcc for the WASM library.
 #
-# odin-c-bindgen (this fork, Dec 2025) still imports core:os/os2, which newer Odin releases removed.
-# If your Odin is newer than that, point BINDGEN_ODIN at an older Odin (dev-2026-01 works) used only to
-# build the generator:   BINDGEN_ODIN=/path/to/old/odin ./build_flecs.sh
-#
 # Usage: ./build_flecs.sh [all|libs|bindings]   (default: all)
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -22,7 +18,6 @@ OUT="$ROOT/distr/oflecs"
 SRC="$ROOT/flecs/distr/flecs.c"
 HDR="$ROOT/flecs/distr/flecs.h"
 CFLAGS="-O2 -DFLECS_STATIC -DNDEBUG"
-BINDGEN_ODIN="${BINDGEN_ODIN:-odin}"
 
 [ -f "$SRC" ] || { echo "flecs submodule missing: git submodule update --init" >&2; exit 1; }
 mkdir -p "$OUT"
@@ -54,7 +49,7 @@ build_bindings() {
 	gen="$ROOT/odin-c-bindgen/bindgen.bin"
 	if [ ! -x "$gen" ]; then
 		llvm_lib="$(llvm-config --libdir 2>/dev/null || echo /usr/lib/llvm-18/lib)"
-		(cd "$ROOT/odin-c-bindgen" && "$BINDGEN_ODIN" build src -out:bindgen.bin \
+		(cd "$ROOT/odin-c-bindgen" && odin build src -out:bindgen.bin \
 			-extra-linker-flags:"-L$llvm_lib -Wl,-rpath,$llvm_lib")
 	fi
 	cp "$HDR" "$ROOT/flecs-bindgen/flecs.h"
